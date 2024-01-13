@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+  prometheus:
+    build: .
+    ports:
+      - 9000:9090
+    links:
+      - alertmanager:alertmanager
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus-data:/prometheus
+    command: --web.enable-lifecycle  --config.file=/etc/prometheus/prometheus.yml
+  node-exporter:
+    image: prom/node-exporter:v1.5.0
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    expose:
+      - 9100
+  grafana:
+    image: grafana/grafana:7.5.7
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    volumes:
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - grafana-data:/var/lib/grafana
+  alertmanager:
+    image: prom/alertmanager
+    restart: unless-stopped
+    ports:
+      - "9093:9093"
+    volumes:
+      - "./alertmanager:/config"
+      - alertmanager-data:/data
+    command: --config.file=/config/alertmanager.yml --log.level=debug
+volumes:
+  prometheus-data:
+  grafana-data:
+  alertmanager-data:
+  node-exporter:
