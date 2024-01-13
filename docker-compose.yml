@@ -14,6 +14,8 @@ services:
   node-exporter:
     image: prom/node-exporter:v1.5.0
     container_name: node-exporter
+    ports:
+      - 9100:9100
     restart: unless-stopped
     volumes:
       - /proc:/host/proc:ro
@@ -46,7 +48,8 @@ services:
       - '--storage.path=/alertmanager'
     deploy:
       mode: global
-
+  telegram-bot:
+    build: .
 volumes:
   prometheus-data:
   grafana-data:
