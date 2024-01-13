@@ -36,13 +36,14 @@ services:
       - grafana-data:/var/lib/grafana
   alertmanager:
     image: prom/alertmanager
-    restart: unless-stopped
     ports:
       - "9093:9093"
     volumes:
-      - "./alertmanager:/config"
-      - alertmanager-data:/data
-    command: --config.file=/config/alertmanager.yml --log.level=debug
+      - ./alertmanager/:/etc/alertmanager/
+    restart: always
+    command:
+      - '-config.file=/etc/alertmanager/config.yml'
+      - '-storage.path=/alertmanager'
 volumes:
   prometheus-data:
   grafana-data:
