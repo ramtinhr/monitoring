@@ -9,39 +9,45 @@ groups:
     annotations:
       summary: "Endpoint {{ $labels.instance }} down"
       description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minutes."
-  
+
   - record: job:node_memory_Mem_bytes:available
     expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100
-    
-  - alert: HighErrorRate
-    expr: job:request_error_rate:rate5m > 0.5
+
+  - alert: JarchiDown
+    expr: up{job="jarchi"} == 0
+    for: 5m
+    labels:
+      severity: "critical"
+    annotations:
+      summary: "Endpoint {{ $labels.instance }} down"
+      description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minutes."
+
+  - alert: WatcherMemoryUsageAlert
+    expr: 100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 90
+    for: 4m30s
+    labels:
+      severity: critical
+      job: "node-exporter-watcher"
+    annotations:
+      description: "Memory usage is above 90% on node-exporter-watcher for the last 2 minutes"
+
+  - alert: DogeMemoryUsageAlerat
+    expr: 100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 95
     for: 5m
     labels:
       severity: critical
+      job: "node-exporter-doge"
     annotations:
-      summary: 'High error rate detected!'  
-      
-  - alert: MemoryUsageAlert
-    expr: 100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 90
-    for: 2m
-    labels:
-      severity: critical
-      job: node-exporter
-    annotations:
-      summary: "High Memory Usage"
-      description: "Memory usage is above 90% on {{ $labels.instance }} for the last 2 minutes."
-
+      description: "Memory usage is above 95% on node-exporter-doge for the last 2 minutes"
 
   - alert: HostOutOfDiskSpace
-    expr: (sum by (instance) (node_filesystem_free_bytes) / sum by (instance) (node_filesystem_size_bytes)) * 100 < 10
-    for: 1m
+    expr: (sum by (instance) (node_filesystem_free_bytes) / sum by (instance) (node_filesystem_size_bytes)) * 100 < 5
+    for: 5m
     labels:
       severity: critical
-      app_type: linux
-      category: disk
+      job: "node-exporter-doge"
     annotations:
-      summary: "Node free disk space is running out"
-      description: "Node disk is going to full (< 50% left)\n  Current free disk space is {{ $value }}"
+      description: "Node disk is going to full (< 5% left)\n  Current free disk space is {{ $value }}"
 
 
   - alert: HostHighCpuLoad

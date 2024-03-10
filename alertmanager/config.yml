@@ -3,37 +3,16 @@ global:
 
 route:
   group_by: ['alertname']
-  group_wait: 10s
-  group_interval: 10s
-  repeat_interval: 1m
-  receiver: 'email'
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'telepush'  # see below
 
-  routes:
-    - receiver: 'email'
-      match_re:
-        severity: critical|warning
-      continue: true
-    - receiver: 'stardata-telegram'
-      match_re:
-        severity: critical|warning
-      continue: true
-
+# telepush configuration here
 receivers:
-- name: 'email'
-  email_configs:
-  - to: 'ramtin.heydarrezaei@gmail.com'
-    from: 'ramtin.hrezaei@gmail.com'
-    smarthost: smtp.gmail.com:587
-    auth_username: 'ramtin.hrezaei@gmail.com'
-    auth_identity: 'ramtin.hrezaei@gmail.com'
-    auth_password: 'nvwaczmqnpjrcrso'
-
-- name: 'stardata-telegram'
-  telegram_configs:
-  - bot_token: '5989686505:AAEoqeLCJJ1d3q5jdcrhJPj3he0B7TXEd4I'
-    api_url: https://api.telegram.org
-    chat_id: -1001824424984
-    parse_mode: ''
+  - name: 'telepush'
+    webhook_configs:
+    - url: 'https://telepush.dev/api/inlets/alertmanager/f342d7'
 
 inhibit_rules:
   - source_match:
